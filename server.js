@@ -9,6 +9,9 @@ import reportRoutes from './routes/reportRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import './utils/cronJobs.js'; // start cron jobs
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
+import taskRoutes from './routes/taskRoutes.js';
+import quranRoutes from './routes/quranRoutes.js';
+
 
 
 dotenv.config();
@@ -23,6 +26,8 @@ app.use('/api/prayerbook', prayerRoutes);
 app.use('/api/tasbeeh', tasbeehRoutes);
 app.use('/api/report', reportRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/quran', quranRoutes); // Dynamic import for Quran routes
+app.use('/api/tasks', taskRoutes); // Dynamic import for Task routes
 app.use('/api/leaderboard', leaderboardRoutes);import PDFDocument from 'pdfkit';
 
 export const generatePrayerReportPDF = (data, period) => {

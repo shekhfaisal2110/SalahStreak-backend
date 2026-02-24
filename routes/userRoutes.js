@@ -6,6 +6,6 @@ import { addSteps } from '../controllers/userController.js';
 const router = express.Router();
 
 router.use(protect);
-router.post('/steps', addSteps);
+router.post('/steps', protect, addSteps);
 
 export default router;

@@ -110,3 +110,39 @@ export const getMonthlyStats = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+// Get today's prayers
+export const getTodayPrayers = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    let entry = await PrayerEntry.findOne({ user: req.user._id, date: today });
+    if (!entry) {
+      entry = new PrayerEntry({
+        user: req.user._id,
+        date: today,
+        prayers: { Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false }
+      });
+      await entry.save();
+    }
+    res.json(entry.prayers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update today's prayers (bulk update)
+export const updateTodayPrayers = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const updates = req.body;
+    const entry = await PrayerEntry.findOneAndUpdate(
+      { user: req.user._id, date: today },
+      { prayers: updates },
+      { new: true, upsert: true }
+    );
+    res.json(entry.prayers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
