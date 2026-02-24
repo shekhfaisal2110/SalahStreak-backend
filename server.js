@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import prayerRoutes from './routes/prayerRoutes.js';
 import tasbeehRoutes from './routes/tasbeehRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import './utils/cronJobs.js'; // start cron jobs
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/prayerbook', prayerRoutes);
 app.use('/api/tasbeeh', tasbeehRoutes);
 app.use('/api/report', reportRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);import PDFDocument from 'pdfkit';
 
 export const generatePrayerReportPDF = (data, period) => {

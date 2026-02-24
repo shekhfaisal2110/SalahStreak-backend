@@ -58,7 +58,9 @@
 
 
 import PrayerEntry from '../models/PrayerEntry.js';
+import TasbeehDaily from '../models/TasbeehDaily.js';
 import { generatePrayerReportPDF } from '../utils/pdfGenerator.js';
+import { generateTasbeehDailyReportPDF } from '../utils/tasbeehPDFGenerator.js';
 
 // Generate report based on date range
 export const generateReport = async (req, res) => {
@@ -112,6 +114,41 @@ export const generateReport = async (req, res) => {
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=prayer-report-${period}.pdf`);
+    res.send(pdfData);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+export const generateTasbeehDailyReport = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ success: false, message: 'startDate and endDate are required' });
+    }
+
+    const dailyTotals = await TasbeehDaily.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          date: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: '$date',
+          total: { $sum: '$count' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const pdfData = await generateTasbeehDailyReportPDF(dailyTotals, startDate, endDate);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=tasbeeh-daily-report-${startDate}-to-${endDate}.pdf`);
     res.send(pdfData);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

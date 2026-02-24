@@ -1,196 +1,3 @@
-// // // import SibApiV3Sdk from 'sib-api-v3-sdk';
-
-// // // const defaultClient = SibApiV3Sdk.ApiClient.instance;
-// // // const apiKey = defaultClient.authentications['api-key'];
-// // // apiKey.apiKey = process.env.BREVO_API_KEY;
-
-// // // const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
-// // // export const sendEmail = async ({ to, subject, htmlContent }) => {
-// // //   const sendSmtpEmail = {
-// // //     to: [{ email: to }],
-// // //     sender: { email: process.env.EMAIL_FROM, name: 'Islamic App' },
-// // //     subject,
-// // //     htmlContent,
-// // //   };
-
-// // //   try {
-// // //     await apiInstance.sendTransacEmail(sendSmtpEmail);
-// // //     console.log('Email sent successfully');
-// // //   } catch (error) {
-// // //     console.error('Error sending email:', error);
-// // //     throw error;
-// // //   }
-// // // };
-
-// // // export const sendOtpEmail = async (email, otp, type) => {
-// // //   const subject = type === 'verify' ? 'Verify Your Email' : 'Reset Your Password';
-// // //   const htmlContent = `
-// // //     <h2>Islamic App</h2>
-// // //     <p>Your OTP code is: <strong>${otp}</strong></p>
-// // //     <p>This code will expire in 10 minutes.</p>
-// // //   `;
-// // //   await sendEmail({ to: email, subject, htmlContent });
-// // // };
-
-// // // export const sendMissedPrayerNotification = async (email, name, missedPrayers) => {
-// // //   const subject = 'Missed Prayer Reminder';
-// // //   const prayersList = missedPrayers.join(', ');
-// // //   const htmlContent = `
-// // //     <h2>Assalamu Alaikum ${name},</h2>
-// // //     <p>You missed the following prayers today: <strong>${prayersList}</strong>.</p>
-// // //     <p>Please make up for them and stay consistent.</p>
-// // //     <p>May Allah accept your efforts.</p>
-// // //   `;
-// // //   await sendEmail({ to: email, subject, htmlContent });
-// // // };
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // import SibApiV3Sdk from 'sib-api-v3-sdk';
-
-// // const defaultClient = SibApiV3Sdk.ApiClient.instance;
-// // const apiKey = defaultClient.authentications['api-key'];
-// // apiKey.apiKey = process.env.BREVO_API_KEY;
-
-// // // Optional: Log that the key is set (first 10 chars)
-// // console.log('Brevo API Key set:', apiKey.apiKey ? apiKey.apiKey.substring(0, 10) + '...' : 'Missing');
-
-// // const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
-// // export const sendEmail = async ({ to, subject, htmlContent }) => {
-// //   const sendSmtpEmail = {
-// //     to: [{ email: to }],
-// //     sender: { email: process.env.EMAIL_FROM, name: 'Islamic App' },
-// //     subject,
-// //     htmlContent,
-// //   };
-
-// //   try {
-// //     const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-// //     console.log('Email sent successfully:', response);
-// //     return response;
-// //   } catch (error) {
-// //     console.error('Error sending email:', error.response?.body || error.message);
-// //     throw error; // Re-throw so the controller can handle it
-// //   }
-// // };
-
-// // export const sendOtpEmail = async (email, otp, type) => {
-// //   const subject = type === 'verify' ? 'Verify Your Email' : 'Reset Your Password';
-// //   const htmlContent = `
-// //     <h2>Islamic App</h2>
-// //     <p>Your OTP code is: <strong>${otp}</strong></p>
-// //     <p>This code will expire in 10 minutes.</p>
-// //   `;
-// //   await sendEmail({ to: email, subject, htmlContent });
-// // };
-
-// // export const sendMissedPrayerNotification = async (email, name, missedPrayers) => {
-// //   const subject = 'Missed Prayer Reminder';
-// //   const prayersList = missedPrayers.join(', ');
-// //   const htmlContent = `
-// //     <h2>Assalamu Alaikum ${name},</h2>
-// //     <p>You missed the following prayers today: <strong>${prayersList}</strong>.</p>
-// //     <p>Please make up for them and stay consistent.</p>
-// //     <p>May Allah accept your efforts.</p>
-// //   `;
-// //   await sendEmail({ to: email, subject, htmlContent });
-// // };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import SibApiV3Sdk from 'sib-api-v3-sdk';
-
-// // Do NOT set API key at module level – set it inside the function to ensure env is loaded.
-// export const sendEmail = async ({ to, subject, htmlContent }) => {
-//   // Configure API key dynamically
-//   const defaultClient = SibApiV3Sdk.ApiClient.instance;
-//   const apiKey = defaultClient.authentications['api-key'];
-//   apiKey.apiKey = process.env.BREVO_API_KEY?.trim();
-
-//   if (!apiKey.apiKey) {
-//     console.error('Brevo API key is missing! Check your .env file.');
-//     throw new Error('Email service misconfigured: API key missing');
-//   }
-
-//   const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-//   const sendSmtpEmail = {
-//     to: [{ email: to }],
-//     sender: { email: process.env.EMAIL_FROM, name: 'Islamic App' },
-//     subject,
-//     htmlContent,
-//   };
-
-//   try {
-//     const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-//     console.log('Email sent successfully to:', to);
-//     return response;
-//   } catch (error) {
-//     console.error('Error sending email:', error.response?.body || error.message);
-//     throw error;
-//   }
-// };
-
-// export const sendOtpEmail = async (email, otp, type) => {
-//   const subject = type === 'verify' ? 'Verify Your Email' : 'Reset Your Password';
-//   const htmlContent = `
-//     <h2>Islamic App</h2>
-//     <p>Your OTP code is: <strong>${otp}</strong></p>
-//     <p>This code will expire in 10 minutes.</p>
-//   `;
-//   await sendEmail({ to: email, subject, htmlContent });
-// };
-
-// export const sendMissedPrayerNotification = async (email, name, missedPrayers) => {
-//   const subject = 'Missed Prayer Reminder';
-//   const prayersList = missedPrayers.join(', ');
-//   const htmlContent = `
-//     <h2>Assalamu Alaikum ${name},</h2>
-//     <p>You missed the following prayers today: <strong>${prayersList}</strong>.</p>
-//     <p>Please make up for them and stay consistent.</p>
-//     <p>May Allah accept your efforts.</p>
-//   `;
-//   await sendEmail({ to: email, subject, htmlContent });
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import SibApiV3Sdk from 'sib-api-v3-sdk';
 
 // Configure API key inside the function to ensure env is loaded
@@ -343,5 +150,32 @@ export const sendMissedPrayerNotification = async (email, name, missedPrayers) =
     </html>
   `;
 
+  await sendEmail({ to: email, subject, htmlContent });
+};
+
+
+
+// Streak milestone email
+export const sendStreakMilestoneEmail = async (email, name, streak) => {
+  const subject = `🎉 Mubarak! You've reached a ${streak}-day streak!`;
+  const htmlContent = `
+    <h2>Assalamu Alaikum ${name},</h2>
+    <p>Masha'Allah! You have maintained your prayers for <strong>${streak} consecutive days</strong>.</p>
+    <p>May Allah continue to grant you steadfastness and accept your efforts.</p>
+    <p>Keep up the great work!</p>
+  `;
+  await sendEmail({ to: email, subject, htmlContent });
+};
+
+// Reminder email for incomplete prayers (streak ≥30)
+export const sendPrayerReminderEmail = async (email, name, streak) => {
+  const subject = '⏰ Don’t break your streak!';
+  const htmlContent = `
+    <h2>Assalamu Alaikum ${name},</h2>
+    <p>You have an amazing streak of <strong>${streak} days</strong>! Don't let it break.</p>
+    <p>You haven't logged all your prayers today. There's still time to complete them before midnight.</p>
+    <p><a href="${process.env.CLIENT_URL}/prayerbook" style="background-color:#10b981; color:white; padding:10px 20px; border-radius:30px; text-decoration:none;">Log Your Prayers</a></p>
+    <p>May Allah accept from you.</p>
+  `;
   await sendEmail({ to: email, subject, htmlContent });
 };

@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   streak: { type: Number, default: 0 },
   lastPrayerDate: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
+  totalSteps: { type: Number, default: 0 },
+  lastMilestoneNotified: { type: Number, default: 0 },
 });
 
 userSchema.pre('save', async function (next) {
