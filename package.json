@@ -15,6 +15,7 @@
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.5",
     "pdfkit": "^0.14.0",
-    "sib-api-v3-sdk": "^8.5.0"
+    "sib-api-v3-sdk": "^8.5.0",
+    "ua-parser-js": "^2.0.9"
   }
 }
