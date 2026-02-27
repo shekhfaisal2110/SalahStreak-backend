@@ -3,17 +3,41 @@ import PDFDocument from 'pdfkit';
 import { UAParser } from 'ua-parser-js';
 import { generateAnalyticsReportPDF } from '../utils/pdfGeneratorAnalytics.js';
 
+// export const recordPageView = async (req, res) => {
+//   try {
+//     const { route } = req.body;
+//     const userId = req.user?._id || null;
+//     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+//     const userAgent = req.headers['user-agent'];
+
+//     const pageView = new PageView({ userId, route, ip, userAgent });
+//     await pageView.save();
+//     res.json({ success: true });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 export const recordPageView = async (req, res) => {
   try {
-    const { route } = req.body;
+    const { route, views = 1 } = req.body; // views defaults to 1
     const userId = req.user?._id || null;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const userAgent = req.headers['user-agent'];
 
-    const pageView = new PageView({ userId, route, ip, userAgent });
-    await pageView.save();
+    // Create an array of page view documents
+    const pageViews = Array.from({ length: views }, () => ({
+      userId,
+      route,
+      ip,
+      userAgent,
+      timestamp: new Date()
+    }));
+
+    await PageView.insertMany(pageViews);
     res.json({ success: true });
   } catch (error) {
+    console.error('Error recording page views:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
