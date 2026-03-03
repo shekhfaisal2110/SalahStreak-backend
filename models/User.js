@@ -52,6 +52,7 @@ const userSchema = new mongoose.Schema({
   lastMilestoneNotified: { type: Number, default: 0 },
   showRank: { type: Boolean, default: false }, 
   loginKey: { type: String, unique: true, sparse: true },
+  pincode: { type: String, default: '' },
 });
 
 userSchema.pre('save', async function (next) {

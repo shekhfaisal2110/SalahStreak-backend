@@ -19,7 +19,7 @@ const generateUniqueLoginKey = async () => {
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, pincode } = req.body;
 
     // 1. Check if a verified user already exists with this email
     const existingVerified = await User.findOne({ email, isVerified: true });
@@ -39,7 +39,7 @@ export const register = async (req, res) => {
     const loginKey = await generateUniqueLoginKey();
 
     // 4. Create the user (unverified)
-    const user = await User.create({ name, email, password, loginKey, isVerified: false });
+    const user = await User.create({ name, email, password, pincode, loginKey, isVerified: false });
 
     // 5. Store OTP in database
     await Otp.create({
@@ -158,6 +158,27 @@ export const getMe = async (req, res) => {
   res.json({ success: true, user: req.user });
 };
 
+// export const loginWithKey = async (req, res) => {
+//   try {
+//     const { loginKey } = req.body;
+//     const user = await User.findOne({ loginKey });
+//     if (!user) {
+//       return res.status(401).json({ success: false, message: 'Invalid login key' });
+//     }
+
+//     if (!user.isVerified) {
+//       return res.status(401).json({ success: false, message: 'Please verify your email first' });
+//     }
+
+//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+//     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
+// In authController.js – add or update the loginWithKey function
 export const loginWithKey = async (req, res) => {
   try {
     const { loginKey } = req.body;
@@ -170,8 +191,13 @@ export const loginWithKey = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Please verify your email first' });
     }
 
+    // ✅ Generate a JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({
+      success: true,
+      token,
+      user: { id: user._id, name: user.name, email: user.email }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

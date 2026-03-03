@@ -12,6 +12,7 @@ import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import quranRoutes from './routes/quranRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import prayerGroupRoutes from './routes/prayerGroupRoutes.js';
 
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/quran', quranRoutes);
 app.use('/api/tasks', taskRoutes); 
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);import PDFDocument from 'pdfkit';
+app.use('/api/prayer-groups', prayerGroupRoutes);
 
 export const generatePrayerReportPDF = (data, period) => {
   const doc = new PDFDocument({ margin: 30, size: 'A4', layout: 'landscape' });
