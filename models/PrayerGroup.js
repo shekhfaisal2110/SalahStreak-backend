@@ -4,7 +4,7 @@ const prayerGroupSchema = new mongoose.Schema({
   name: { type: String, required: true },
   area: { type: String, required: true },
   pincode: { type: String, required: true },
-  pinned: { type: Boolean, default: false }, // global pin
+  pinned: { type: Boolean, default: false },
   times: {
     Fajr: {
       azan: { type: String, default: '' },
@@ -23,6 +23,10 @@ const prayerGroupSchema = new mongoose.Schema({
       jamaat: { type: String, default: '' }
     },
     Isha: {
+      azan: { type: String, default: '' },
+      jamaat: { type: String, default: '' }
+    },
+    Jumma: {                                   // Added Jumma times
       azan: { type: String, default: '' },
       jamaat: { type: String, default: '' }
     },
