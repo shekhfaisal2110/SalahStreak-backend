@@ -26,7 +26,7 @@ const prayerGroupSchema = new mongoose.Schema({
       azan: { type: String, default: '' },
       jamaat: { type: String, default: '' }
     },
-    Jumma: {                                   // Added Jumma times
+    Jumma: {                                   
       azan: { type: String, default: '' },
       jamaat: { type: String, default: '' }
     },

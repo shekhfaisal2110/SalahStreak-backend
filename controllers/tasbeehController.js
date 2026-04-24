@@ -250,3 +250,62 @@ export const getDailyTotalsByDateRange = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+// Get daily completion status for a single tasbeeh (calendar view)
+export const getTasbeehDailyCompletion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ success: false, message: 'startDate and endDate required' });
+    }
+
+    // Get the tasbeeh to know its targetCount
+    const tasbeeh = await Tasbeeh.findOne({ _id: id, user: req.user._id });
+    if (!tasbeeh) {
+      return res.status(404).json({ success: false, message: 'Tasbeeh not found' });
+    }
+
+    // Fetch daily counts from TasbeehDaily
+    const dailyRecords = await TasbeehDaily.find({
+      user: req.user._id,
+      tasbeeh: id,
+      date: { $gte: startDate, $lte: endDate }
+    });
+
+    // Build a map date -> count
+    const dailyMap = new Map();
+    dailyRecords.forEach(record => {
+      dailyMap.set(record.date, record.count);
+    });
+
+    // Generate all dates in range
+    const dates = [];
+    let current = new Date(startDate);
+    const end = new Date(endDate);
+    while (current <= end) {
+      const dateStr = current.toISOString().split('T')[0];
+      const count = dailyMap.get(dateStr) || 0;
+      const completed = count >= tasbeeh.targetCount;
+      dates.push({
+        date: dateStr,
+        count,
+        completed,
+        target: tasbeeh.targetCount
+      });
+      current.setDate(current.getDate() + 1);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        tasbeeh: { id: tasbeeh._id, name: tasbeeh.name, targetCount: tasbeeh.targetCount },
+        dailyStatus: dates
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
