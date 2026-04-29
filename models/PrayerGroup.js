@@ -26,7 +26,7 @@ const prayerGroupSchema = new mongoose.Schema({
       azan: { type: String, default: '' },
       jamaat: { type: String, default: '' }
     },
-    Jumma: {                                   
+    Jumma: {
       azan: { type: String, default: '' },
       jamaat: { type: String, default: '' }
     },
@@ -42,11 +42,6 @@ const prayerGroupSchema = new mongoose.Schema({
     userName: { type: String },
     updatedAt: { type: Date, default: Date.now }
   }]
-});
-
-prayerGroupSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
 });
 
 const PrayerGroup = mongoose.model('PrayerGroup', prayerGroupSchema);

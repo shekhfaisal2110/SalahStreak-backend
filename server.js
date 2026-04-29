@@ -7,8 +7,7 @@ import prayerRoutes from './routes/prayerRoutes.js';
 import tasbeehRoutes from './routes/tasbeehRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import './utils/cronJobs.js'; // start cron jobs
-import leaderboardRoutes from './routes/leaderboardRoutes.js';
+import './utils/cronJobs.js'; 
 import taskRoutes from './routes/taskRoutes.js';
 import quranRoutes from './routes/quranRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
@@ -30,7 +29,6 @@ app.use('/api/user', userRoutes);
 app.use('/api/quran', quranRoutes); 
 app.use('/api/tasks', taskRoutes); 
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/leaderboard', leaderboardRoutes);import PDFDocument from 'pdfkit';
 app.use('/api/prayer-groups', prayerGroupRoutes);
 
 export const generatePrayerReportPDF = (data, period) => {
