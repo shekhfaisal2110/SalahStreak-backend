@@ -176,6 +176,7 @@ const allowedOrigins = [
   'http://localhost:5173',    // Vite default dev server
   'http://localhost:3000',    // React default
   'http://127.0.0.1:5173',
+  'https://salah-streak.netlify.app',
   process.env.CLIENT_URL,      // Production URL (e.g., https://salah-streak.netlify.app)
 ].filter(Boolean);             // Remove undefined
 
