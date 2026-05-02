@@ -1,36 +1,248 @@
-import { PageView, Event } from '../models/Analytics.js';
-import PDFDocument from 'pdfkit';
-import { UAParser } from 'ua-parser-js';
-import { generateAnalyticsReportPDF } from '../utils/pdfGeneratorAnalytics.js';
+// import { PageView, Event } from '../models/Analytics.js';
+// import PDFDocument from 'pdfkit';
+// import { UAParser } from 'ua-parser-js';
+// import { generateAnalyticsReportPDF } from '../utils/pdfGeneratorAnalytics.js';
+
+// // export const recordPageView = async (req, res) => {
+// //   try {
+// //     const { route } = req.body;
+// //     const userId = req.user?._id || null;
+// //     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+// //     const userAgent = req.headers['user-agent'];
+
+// //     const pageView = new PageView({ userId, route, ip, userAgent });
+// //     await pageView.save();
+// //     res.json({ success: true });
+// //   } catch (error) {
+// //     res.status(500).json({ success: false, message: error.message });
+// //   }
+// // };
 
 // export const recordPageView = async (req, res) => {
 //   try {
-//     const { route } = req.body;
+//     const { route, views = 1 } = req.body; // views defaults to 1
 //     const userId = req.user?._id || null;
 //     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 //     const userAgent = req.headers['user-agent'];
 
-//     const pageView = new PageView({ userId, route, ip, userAgent });
-//     await pageView.save();
+//     // Create an array of page view documents
+//     const pageViews = Array.from({ length: views }, () => ({
+//       userId,
+//       route,
+//       ip,
+//       userAgent,
+//       timestamp: new Date()
+//     }));
+
+//     await PageView.insertMany(pageViews);
 //     res.json({ success: true });
+//   } catch (error) {
+//     console.error('Error recording page views:', error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// export const recordEvent = async (req, res) => {
+//   try {
+//     const { eventType, metadata } = req.body;
+//     const userId = req.user?._id || null;
+//     const event = new Event({ userId, eventType, metadata });
+//     await event.save();
+//     res.json({ success: true });
+//   } catch (error) {
+//     console.error('Event save error:', error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// export const getAnalyticsSummary = async (req, res) => {
+//   try {
+//     const totalPageViews = await PageView.countDocuments();
+//     const totalEvents = await Event.countDocuments();
+
+//     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+//     const routeStats = await PageView.aggregate([
+//       { $match: { timestamp: { $gte: thirtyDaysAgo } } },
+//       { $group: { _id: '$route', count: { $sum: 1 } } },
+//       { $sort: { count: -1 } }
+//     ]);
+
+//     const dailyViews = await PageView.aggregate([
+//       { $match: { timestamp: { $gte: thirtyDaysAgo } } },
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+//           count: { $sum: 1 }
+//         }
+//       },
+//       { $sort: { _id: 1 } }
+//     ]);
+
+//     res.json({
+//       success: true,
+//       data: { totalPageViews, totalEvents, routeStats, dailyViews }
+//     });
 //   } catch (error) {
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
 
+// export const getDailyViewsByDateRange = async (req, res) => {
+//   try {
+//     const { startDate, endDate } = req.query;
+//     const query = {};
+//     if (startDate && endDate) {
+//       const start = new Date(startDate + 'T00:00:00.000Z');
+//       const end = new Date(endDate + 'T23:59:59.999Z');
+//       query.timestamp = { $gte: start, $lte: end };
+//     }
+//     const dailyViews = await PageView.aggregate([
+//       { $match: query },
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+//           count: { $sum: 1 }
+//         }
+//       },
+//       { $sort: { _id: 1 } }
+//     ]);
+//     res.json({ success: true, data: dailyViews });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// export const getDeviceBreakdown = async (req, res) => {
+//   try {
+//     const pageViews = await PageView.find().lean();
+//     const counts = { Desktop: 0, Mobile: 0, Tablet: 0 };
+//     pageViews.forEach(pv => {
+//       const ua = pv.userAgent || '';
+//       const parser = new UAParser(ua);
+//       const device = parser.getDevice().type || 'desktop';
+//       if (device === 'mobile') counts.Mobile++;
+//       else if (device === 'tablet') counts.Tablet++;
+//       else counts.Desktop++;
+//     });
+//     const data = [
+//       { name: 'Desktop', value: counts.Desktop },
+//       { name: 'Mobile', value: counts.Mobile },
+//       { name: 'Tablet', value: counts.Tablet },
+//     ].filter(d => d.value > 0);
+//     res.json({ success: true, data });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// export const getUserTypes = async (req, res) => {
+//   try {
+//     const uniqueUsers = await PageView.distinct('userId');
+//     const registeredCount = uniqueUsers.filter(id => id != null).length;
+//     const data = [{ name: 'Registered Users', value: registeredCount }];
+//     res.json({ success: true, data });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// export const generateAnalyticsReport = async (req, res) => {
+//   try {
+//     const { startDate, endDate } = req.query;
+//     const query = {};
+//     if (startDate && endDate) {
+//       const start = new Date(startDate + 'T00:00:00.000Z');
+//       const end = new Date(endDate + 'T23:59:59.999Z');
+//       query.timestamp = { $gte: start, $lte: end };
+//     }
+
+//     const totalPageViews = await PageView.countDocuments(query);
+//     const totalEvents = await Event.countDocuments(query);
+
+//     const uniqueRoutesData = await PageView.aggregate([
+//       { $match: query },
+//       { $group: { _id: '$route' } },
+//       { $count: 'count' }
+//     ]);
+//     const uniqueRoutes = uniqueRoutesData[0]?.count || 0;
+
+//     const dailyViews = await PageView.aggregate([
+//       { $match: query },
+//       {
+//         $group: {
+//           _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+//           count: { $sum: 1 }
+//         }
+//       },
+//       { $sort: { _id: 1 } }
+//     ]);
+
+//     const rangeDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
+//     const groupByMonth = rangeDays > 60;
+//     let rows;
+//     if (groupByMonth) {
+//       const monthly = await PageView.aggregate([
+//         { $match: query },
+//         {
+//           $group: {
+//             _id: { $dateToString: { format: '%Y-%m', date: '$timestamp' } },
+//             count: { $sum: 1 }
+//           }
+//         },
+//         { $sort: { _id: 1 } }
+//       ]);
+//       rows = monthly.map(item => ({ period: item._id, count: item.count }));
+//     } else {
+//       rows = dailyViews.map(item => ({ period: item._id, count: item.count }));
+//     }
+
+//     const pdfData = await generateAnalyticsReportPDF({
+//       totalPageViews,
+//       totalEvents,
+//       uniqueRoutes,
+//       rows,
+//       groupByMonth
+//     }, startDate, endDate);
+
+//     res.setHeader('Content-Type', 'application/pdf');
+//     res.setHeader('Content-Disposition', `attachment; filename=analytics-report.pdf`);
+//     res.send(pdfData);
+//   } catch (error) {
+//     console.error('Report generation error:', error);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
+
+
+
+import { PageView, Event } from '../models/Analytics.js';
+import { UAParser } from 'ua-parser-js';
+import { generateAnalyticsReportPDF } from '../utils/pdfGeneratorAnalytics.js';
+
+// ✅ Helper: default last 30 days range
+const getDefaultDateRange = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 30);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+};
+
+// ✅ Record page view (with abuse protection)
 export const recordPageView = async (req, res) => {
   try {
-    const { route, views = 1 } = req.body; // views defaults to 1
+    let { route, views = 1 } = req.body;
+    views = Math.min(Math.max(1, parseInt(views) || 1), 100); // max 100 per request
+
     const userId = req.user?._id || null;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const userAgent = req.headers['user-agent'];
 
-    // Create an array of page view documents
     const pageViews = Array.from({ length: views }, () => ({
-      userId,
-      route,
-      ip,
-      userAgent,
+      userId, route, ip, userAgent,
       timestamp: new Date()
     }));
 
@@ -42,12 +254,12 @@ export const recordPageView = async (req, res) => {
   }
 };
 
+// ✅ Record event
 export const recordEvent = async (req, res) => {
   try {
     const { eventType, metadata } = req.body;
     const userId = req.user?._id || null;
-    const event = new Event({ userId, eventType, metadata });
-    await event.save();
+    await Event.create({ userId, eventType, metadata });
     res.json({ success: true });
   } catch (error) {
     console.error('Event save error:', error);
@@ -55,49 +267,76 @@ export const recordEvent = async (req, res) => {
   }
 };
 
+// ✅ Optimized summary using $facet (single aggregation)
 export const getAnalyticsSummary = async (req, res) => {
   try {
-    const totalPageViews = await PageView.countDocuments();
-    const totalEvents = await Event.countDocuments();
+    let { startDate, endDate } = req.query;
+    let start, end;
+    if (startDate && endDate) {
+      start = new Date(startDate + 'T00:00:00.000Z');
+      end = new Date(endDate + 'T23:59:59.999Z');
+    } else {
+      const def = getDefaultDateRange();
+      start = def.start;
+      end = def.end;
+    }
 
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const routeStats = await PageView.aggregate([
-      { $match: { timestamp: { $gte: thirtyDaysAgo } } },
-      { $group: { _id: '$route', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
-    ]);
+    const matchStage = { timestamp: { $gte: start, $lte: end } };
 
-    const dailyViews = await PageView.aggregate([
-      { $match: { timestamp: { $gte: thirtyDaysAgo } } },
+    const [result] = await PageView.aggregate([
+      { $match: matchStage },
       {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-          count: { $sum: 1 }
+        $facet: {
+          totalPageViews: [{ $count: 'count' }],
+          routeStats: [
+            { $group: { _id: '$route', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 20 }
+          ],
+          dailyViews: [
+            {
+              $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { _id: 1 } }
+          ]
         }
-      },
-      { $sort: { _id: 1 } }
+      }
     ]);
+
+    const totalEvents = await Event.countDocuments(matchStage);
 
     res.json({
       success: true,
-      data: { totalPageViews, totalEvents, routeStats, dailyViews }
+      data: {
+        totalPageViews: result.totalPageViews[0]?.count || 0,
+        totalEvents,
+        routeStats: result.routeStats,
+        dailyViews: result.dailyViews
+      }
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+// ✅ Daily views by date range (with defaults)
 export const getDailyViewsByDateRange = async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
-    const query = {};
-    if (startDate && endDate) {
-      const start = new Date(startDate + 'T00:00:00.000Z');
-      const end = new Date(endDate + 'T23:59:59.999Z');
-      query.timestamp = { $gte: start, $lte: end };
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const def = getDefaultDateRange();
+      startDate = def.start.toISOString().slice(0, 10);
+      endDate = def.end.toISOString().slice(0, 10);
     }
+    const start = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T23:59:59.999Z');
+
     const dailyViews = await PageView.aggregate([
-      { $match: query },
+      { $match: { timestamp: { $gte: start, $lte: end } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
@@ -112,18 +351,34 @@ export const getDailyViewsByDateRange = async (req, res) => {
   }
 };
 
+// ✅ Device breakdown – sample last 30 days and limit 10k records
 export const getDeviceBreakdown = async (req, res) => {
   try {
-    const pageViews = await PageView.find().lean();
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const def = getDefaultDateRange();
+      startDate = def.start.toISOString().slice(0, 10);
+      endDate = def.end.toISOString().slice(0, 10);
+    }
+    const start = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T23:59:59.999Z');
+
+    // Fetch only userAgent field, limit to 10000 records for performance
+    const pageViews = await PageView.find(
+      { timestamp: { $gte: start, $lte: end } },
+      { userAgent: 1 }
+    ).limit(10000).lean();
+
     const counts = { Desktop: 0, Mobile: 0, Tablet: 0 };
-    pageViews.forEach(pv => {
+    for (const pv of pageViews) {
       const ua = pv.userAgent || '';
       const parser = new UAParser(ua);
       const device = parser.getDevice().type || 'desktop';
       if (device === 'mobile') counts.Mobile++;
       else if (device === 'tablet') counts.Tablet++;
       else counts.Desktop++;
-    });
+    }
+
     const data = [
       { name: 'Desktop', value: counts.Desktop },
       { name: 'Mobile', value: counts.Mobile },
@@ -131,30 +386,61 @@ export const getDeviceBreakdown = async (req, res) => {
     ].filter(d => d.value > 0);
     res.json({ success: true, data });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+// ✅ User types – optimized with aggregation and date range
 export const getUserTypes = async (req, res) => {
   try {
-    const uniqueUsers = await PageView.distinct('userId');
-    const registeredCount = uniqueUsers.filter(id => id != null).length;
-    const data = [{ name: 'Registered Users', value: registeredCount }];
-    res.json({ success: true, data });
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const def = getDefaultDateRange();
+      startDate = def.start.toISOString().slice(0, 10);
+      endDate = def.end.toISOString().slice(0, 10);
+    }
+    const start = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T23:59:59.999Z');
+
+    const result = await PageView.aggregate([
+      { $match: { timestamp: { $gte: start, $lte: end } } },
+      {
+        $group: {
+          _id: null,
+          registeredUsers: { $addToSet: { $cond: [{ $ne: ['$userId', null] }, '$userId', null] } }
+        }
+      },
+      {
+        $project: {
+          registeredCount: { $size: { $setDifference: ['$registeredUsers', [null]] } }
+        }
+      }
+    ]);
+
+    const registeredCount = result[0]?.registeredCount || 0;
+    res.json({
+      success: true,
+      data: [{ name: 'Registered Users', value: registeredCount }]
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+// ✅ Generate PDF report (already okay, but added default range)
 export const generateAnalyticsReport = async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
-    const query = {};
-    if (startDate && endDate) {
-      const start = new Date(startDate + 'T00:00:00.000Z');
-      const end = new Date(endDate + 'T23:59:59.999Z');
-      query.timestamp = { $gte: start, $lte: end };
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const def = getDefaultDateRange();
+      startDate = def.start.toISOString().slice(0, 10);
+      endDate = def.end.toISOString().slice(0, 10);
     }
+    const start = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T23:59:59.999Z');
+    const query = { timestamp: { $gte: start, $lte: end } };
 
     const totalPageViews = await PageView.countDocuments(query);
     const totalEvents = await Event.countDocuments(query);
@@ -177,7 +463,7 @@ export const generateAnalyticsReport = async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    const rangeDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
+    const rangeDays = (end - start) / (1000 * 60 * 60 * 24);
     const groupByMonth = rangeDays > 60;
     let rows;
     if (groupByMonth) {
