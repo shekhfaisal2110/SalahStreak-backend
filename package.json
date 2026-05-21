@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run build && node dist/server.js",
-    "dev": "nodemon server.js",
-    "build": "babel server.js --out-dir dist --copy-files"
-  },
+  "start": "node server.js"
+},
   "dependencies": {
     "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
