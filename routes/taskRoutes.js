@@ -106,6 +106,7 @@ router.get('/:taskId/year-entries', noCache, getEntriesForYear); // remove dupli
 router.post('/', createLimiter, noCache, createTask);
 router.put('/:id', updateLimiter, noCache, updateTask);
 router.delete('/:id', deleteLimiter, noCache, deleteTask);
-router.put('/:taskId/entries/:date', toggleLimiter, noCache, toggleEntry);
+router.put('/:taskId/entries/:date', toggleEntry);
+
 
 export default router;

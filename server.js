@@ -149,6 +149,10 @@ import taskRoutes from './routes/taskRoutes.js';
 import quranRoutes from './routes/quranRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import prayerGroupRoutes from './routes/prayerGroupRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import adminNotificationsRoutes from './routes/adminNotificationsRoutes.js';
+import goalRoutes from './routes/goalRoutes.js';
 
 dotenv.config();
 
@@ -176,6 +180,7 @@ const allowedOrigins = [
   'http://localhost:5173',    // Vite default dev server
   'http://localhost:3000',    // React default
   'http://127.0.0.1:5173',
+  'http://localhost:5174',
   'https://salah-streak.netlify.app',
   process.env.CLIENT_URL,      // Production URL (e.g., https://salah-streak.netlify.app)
 ].filter(Boolean);             // Remove undefined
@@ -229,6 +234,13 @@ app.use('/api/quran', quranRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/prayer-groups', prayerGroupRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminNotificationsRoutes);
+app.use('/api/goals', goalRoutes);
+import feedbackRoutes from './routes/feedbackRoutes.js';
+app.use('/api/feedback', feedbackRoutes);
+
 
 // ✅ 404 handler
 app.use((req, res) => {

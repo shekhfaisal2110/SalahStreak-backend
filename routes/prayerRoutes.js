@@ -50,7 +50,7 @@ router.use(protect);
 
 // Read endpoints with caching
 router.get('/', cacheShort, getPrayerBook);
-router.get('/stats/:year/:month', cacheMonthly, getMonthlyStats);
+router.get('/stats/:year/:month', getMonthlyStats); // no caching
 router.get('/today', cacheShort, getTodayPrayers);
 
 // Write endpoints with rate limiting (and no cache)
