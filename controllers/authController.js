@@ -512,26 +512,16 @@ export const verifyOtp = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email }).select('+password name email isVerified _id').lean();
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
+    if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    if (!user.isVerified) {
-      return res.status(401).json({ success: false, message: 'Please verify your email first' });
-    }
-
+    if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (!user.isVerified) return res.status(401).json({ success: false, message: 'Please verify your email first' });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
     console.error('Login error:', error);
-    // Send the error message in response for debugging
+    // Send the actual error to the frontend for debugging
     res.status(500).json({ success: false, message: 'Internal server error', details: error.message });
   }
 };
