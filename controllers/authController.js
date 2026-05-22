@@ -1,6 +1,216 @@
+// // // import User from '../models/User.js';
+// // // import Otp from '../models/Otp.js';
+// // // import jwt from 'jsonwebtoken';
+// // // import { sendOtpEmail, sendRegistrationEmail } from '../utils/emailService.js';
+// // // import crypto from 'crypto';
+
+// // // const generateOTP = () => crypto.randomInt(100000, 999999).toString();
+
+// // // const generateUniqueLoginKey = async () => {
+// // //   let key;
+// // //   let exists = true;
+// // //   while (exists) {
+// // //     key = crypto.randomBytes(6).toString('base64').replace(/[+/=]/g, '').substring(0, 8);
+// // //     const user = await User.findOne({ loginKey: key });
+// // //     if (!user) exists = false;
+// // //   }
+// // //   return key;
+// // // };
+
+// // // export const register = async (req, res) => {
+// // //   try {
+// // //     const { name, email, password, pincode } = req.body;
+
+// // //     // 1. Check if a verified user already exists with this email
+// // //     const existingVerified = await User.findOne({ email, isVerified: true });
+// // //     if (existingVerified) {
+// // //       return res.status(400).json({ success: false, message: 'User already exists' });
+// // //     }
+
+// // //     // 2. If an unverified user exists, delete it (and its OTPs) to allow a fresh start
+// // //     const existingUnverified = await User.findOne({ email, isVerified: false });
+// // //     if (existingUnverified) {
+// // //       await Otp.deleteMany({ email });
+// // //       await existingUnverified.deleteOne();
+// // //     }
+
+// // //     // 3. Generate OTP and login key
+// // //     const otp = generateOTP();
+// // //     const loginKey = await generateUniqueLoginKey();
+
+// // //     // 4. Create the user (unverified)
+// // //     const user = await User.create({ name, email, password, pincode, loginKey, isVerified: false });
+
+// // //     // 5. Store OTP in database
+// // //     await Otp.create({
+// // //       email,
+// // //       otp,
+// // //       type: 'verify',
+// // //       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+// // //     });
+
+// // //     // 6. Attempt to send email
+// // //     try {
+// // //       await sendRegistrationEmail(email, name, otp, loginKey);
+// // //     } catch (emailError) {
+// // //       // If email fails, roll back: delete the user and OTP
+// // //       await user.deleteOne();
+// // //       await Otp.deleteOne({ email, otp, type: 'verify' });
+// // //       console.error('Email sending failed:', emailError);
+// // //       return res.status(500).json({ success: false, message: 'Failed to send verification email. Please try again.' });
+// // //     }
+
+// // //     // 7. Email sent successfully – generate token and respond
+// // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+// // //     res.status(201).json({
+// // //       success: true,
+// // //       token,
+// // //       user: { id: user._id, name, email, isVerified: false },
+// // //       // loginKey // optional – you can send it to show once
+// // //     });
+// // //   } catch (error) {
+// // //     console.error('Registration error:', error);
+// // //     res.status(500).json({ success: false, message: error.message });
+// // //   }
+// // // };
+
+// // // export const verifyOtp = async (req, res) => {
+// // //   try {
+// // //     const { email, otp, type } = req.body;
+// // //     const record = await Otp.findOne({ email, otp, type });
+// // //     if (!record || record.expiresAt < new Date()) {
+// // //       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+// // //     }
+
+// // //     if (type === 'verify') {
+// // //       await User.findOneAndUpdate({ email }, { isVerified: true });
+// // //     }
+
+// // //     await Otp.deleteOne({ _id: record._id });
+// // //     res.json({ success: true, message: 'OTP verified successfully' });
+// // //   } catch (error) {
+// // //     res.status(500).json({ success: false, message: error.message });
+// // //   }
+// // // };
+
+// // // export const login = async (req, res) => {
+// // //   try {
+// // //     const { email, password } = req.body;
+// // //     const user = await User.findOne({ email });
+// // //     if (!user || !(await user.comparePassword(password))) {
+// // //       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+// // //     }
+
+// // //     if (!user.isVerified) {
+// // //       return res.status(401).json({ success: false, message: 'Please verify your email first' });
+// // //     }
+
+// // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+// // //     res.json({ success: true, token, user: { id: user._id, name: user.name, email } });
+// // //   } catch (error) {
+// // //     res.status(500).json({ success: false, message: error.message });
+// // //   }
+// // // };
+
+// // // export const forgotPassword = async (req, res) => {
+// // //   try {
+// // //     const { email } = req.body;
+// // //     const user = await User.findOne({ email });
+// // //     if (!user) {
+// // //       return res.status(404).json({ success: false, message: 'User not found' });
+// // //     }
+
+// // //     const otp = generateOTP();
+// // //     await Otp.create({
+// // //       email,
+// // //       otp,
+// // //       type: 'reset',
+// // //       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+// // //     });
+
+// // //     await sendOtpEmail(email, otp, 'reset');
+// // //     res.json({ success: true, message: 'OTP sent to email' });
+// // //   } catch (error) {
+// // //     res.status(500).json({ success: false, message: error.message });
+// // //   }
+// // // };
+
+// // // export const resetPassword = async (req, res) => {
+// // //   try {
+// // //     const { email, otp, newPassword } = req.body;
+// // //     const record = await Otp.findOne({ email, otp, type: 'reset' });
+// // //     if (!record || record.expiresAt < new Date()) {
+// // //       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+// // //     }
+
+// // //     const user = await User.findOne({ email });
+// // //     user.password = newPassword;
+// // //     await user.save();
+
+// // //     await Otp.deleteOne({ _id: record._id });
+// // //     res.json({ success: true, message: 'Password reset successfully' });
+// // //   } catch (error) {
+// // //     res.status(500).json({ success: false, message: error.message });
+// // //   }
+// // // };
+
+// // // export const getMe = async (req, res) => {
+// // //   res.json({ success: true, user: req.user });
+// // // };
+
+// // // // export const loginWithKey = async (req, res) => {
+// // // //   try {
+// // // //     const { loginKey } = req.body;
+// // // //     const user = await User.findOne({ loginKey });
+// // // //     if (!user) {
+// // // //       return res.status(401).json({ success: false, message: 'Invalid login key' });
+// // // //     }
+
+// // // //     if (!user.isVerified) {
+// // // //       return res.status(401).json({ success: false, message: 'Please verify your email first' });
+// // // //     }
+
+// // // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+// // // //     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
+// // // //   } catch (error) {
+// // // //     res.status(500).json({ success: false, message: error.message });
+// // // //   }
+// // // // };
+
+
+// // // // In authController.js – add or update the loginWithKey function
+// // // export const loginWithKey = async (req, res) => {
+// // //   try {
+// // //     const { loginKey } = req.body;
+// // //     const user = await User.findOne({ loginKey });
+// // //     if (!user) {
+// // //       return res.status(401).json({ success: false, message: 'Invalid login key' });
+// // //     }
+
+// // //     if (!user.isVerified) {
+// // //       return res.status(401).json({ success: false, message: 'Please verify your email first' });
+// // //     }
+
+// // //     // ✅ Generate a JWT token
+// // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+// // //     res.json({
+// // //       success: true,
+// // //       token,
+// // //       user: { id: user._id, name: user.name, email: user.email }
+// // //     });
+// // //   } catch (error) {
+// // //     res.status(500).json({ success: false, message: error.message });
+// // //   }
+// // // };
+
+
+
+
+
 // // import User from '../models/User.js';
 // // import Otp from '../models/Otp.js';
 // // import jwt from 'jsonwebtoken';
+// // import bcrypt from 'bcryptjs';
 // // import { sendOtpEmail, sendRegistrationEmail } from '../utils/emailService.js';
 // // import crypto from 'crypto';
 
@@ -11,7 +221,8 @@
 // //   let exists = true;
 // //   while (exists) {
 // //     key = crypto.randomBytes(6).toString('base64').replace(/[+/=]/g, '').substring(0, 8);
-// //     const user = await User.findOne({ loginKey: key });
+// //     // ✅ Use lean() to avoid full document load
+// //     const user = await User.findOne({ loginKey: key }).lean();
 // //     if (!user) exists = false;
 // //   }
 // //   return key;
@@ -21,27 +232,23 @@
 // //   try {
 // //     const { name, email, password, pincode } = req.body;
 
-// //     // 1. Check if a verified user already exists with this email
-// //     const existingVerified = await User.findOne({ email, isVerified: true });
+// //     // 1. Check verified user (lean)
+// //     const existingVerified = await User.findOne({ email, isVerified: true }).lean();
 // //     if (existingVerified) {
 // //       return res.status(400).json({ success: false, message: 'User already exists' });
 // //     }
 
-// //     // 2. If an unverified user exists, delete it (and its OTPs) to allow a fresh start
-// //     const existingUnverified = await User.findOne({ email, isVerified: false });
-// //     if (existingUnverified) {
+// //     // 2. Delete unverified user atomically and their OTPs
+// //     const unverifiedUser = await User.findOneAndDelete({ email, isVerified: false });
+// //     if (unverifiedUser) {
 // //       await Otp.deleteMany({ email });
-// //       await existingUnverified.deleteOne();
 // //     }
 
-// //     // 3. Generate OTP and login key
 // //     const otp = generateOTP();
 // //     const loginKey = await generateUniqueLoginKey();
 
-// //     // 4. Create the user (unverified)
 // //     const user = await User.create({ name, email, password, pincode, loginKey, isVerified: false });
 
-// //     // 5. Store OTP in database
 // //     await Otp.create({
 // //       email,
 // //       otp,
@@ -49,24 +256,21 @@
 // //       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
 // //     });
 
-// //     // 6. Attempt to send email
 // //     try {
 // //       await sendRegistrationEmail(email, name, otp, loginKey);
 // //     } catch (emailError) {
-// //       // If email fails, roll back: delete the user and OTP
-// //       await user.deleteOne();
+// //       // Rollback
+// //       await User.deleteOne({ _id: user._id });
 // //       await Otp.deleteOne({ email, otp, type: 'verify' });
 // //       console.error('Email sending failed:', emailError);
 // //       return res.status(500).json({ success: false, message: 'Failed to send verification email. Please try again.' });
 // //     }
 
-// //     // 7. Email sent successfully – generate token and respond
 // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 // //     res.status(201).json({
 // //       success: true,
 // //       token,
 // //       user: { id: user._id, name, email, isVerified: false },
-// //       // loginKey // optional – you can send it to show once
 // //     });
 // //   } catch (error) {
 // //     console.error('Registration error:', error);
@@ -77,18 +281,21 @@
 // // export const verifyOtp = async (req, res) => {
 // //   try {
 // //     const { email, otp, type } = req.body;
-// //     const record = await Otp.findOne({ email, otp, type });
+// //     // ✅ Lean OTP check
+// //     const record = await Otp.findOne({ email, otp, type }).lean();
 // //     if (!record || record.expiresAt < new Date()) {
 // //       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
 // //     }
 
 // //     if (type === 'verify') {
-// //       await User.findOneAndUpdate({ email }, { isVerified: true });
+// //       // ✅ Atomic update – no need to fetch user
+// //       await User.updateOne({ email }, { $set: { isVerified: true } });
 // //     }
 
 // //     await Otp.deleteOne({ _id: record._id });
 // //     res.json({ success: true, message: 'OTP verified successfully' });
 // //   } catch (error) {
+// //     console.error(error);
 // //     res.status(500).json({ success: false, message: error.message });
 // //   }
 // // };
@@ -96,8 +303,17 @@
 // // export const login = async (req, res) => {
 // //   try {
 // //     const { email, password } = req.body;
-// //     const user = await User.findOne({ email });
-// //     if (!user || !(await user.comparePassword(password))) {
+
+// //     // IMPORTANT: use .select('+password') to include the password field
+// //     const user = await User.findOne({ email }).select('+password name isVerified email _id').lean();
+
+// //     if (!user) {
+// //       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+// //     }
+
+// //     // Compare password (both arguments must be strings)
+// //     const isMatch = await bcrypt.compare(password, user.password);
+// //     if (!isMatch) {
 // //       return res.status(401).json({ success: false, message: 'Invalid credentials' });
 // //     }
 
@@ -106,8 +322,13 @@
 // //     }
 
 // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-// //     res.json({ success: true, token, user: { id: user._id, name: user.name, email } });
+// //     res.json({
+// //       success: true,
+// //       token,
+// //       user: { id: user._id, name: user.name, email: user.email }
+// //     });
 // //   } catch (error) {
+// //     console.error(error);
 // //     res.status(500).json({ success: false, message: error.message });
 // //   }
 // // };
@@ -115,7 +336,8 @@
 // // export const forgotPassword = async (req, res) => {
 // //   try {
 // //     const { email } = req.body;
-// //     const user = await User.findOne({ email });
+// //     // ✅ Lean check existence
+// //     const user = await User.findOne({ email }).lean();
 // //     if (!user) {
 // //       return res.status(404).json({ success: false, message: 'User not found' });
 // //     }
@@ -131,6 +353,7 @@
 // //     await sendOtpEmail(email, otp, 'reset');
 // //     res.json({ success: true, message: 'OTP sent to email' });
 // //   } catch (error) {
+// //     console.error(error);
 // //     res.status(500).json({ success: false, message: error.message });
 // //   }
 // // };
@@ -138,51 +361,38 @@
 // // export const resetPassword = async (req, res) => {
 // //   try {
 // //     const { email, otp, newPassword } = req.body;
-// //     const record = await Otp.findOne({ email, otp, type: 'reset' });
+// //     // ✅ Lean OTP check
+// //     const record = await Otp.findOne({ email, otp, type: 'reset' }).lean();
 // //     if (!record || record.expiresAt < new Date()) {
 // //       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
 // //     }
 
+// //     // Fetch user to update password (pre-save hook will hash)
 // //     const user = await User.findOne({ email });
+// //     if (!user) {
+// //       return res.status(404).json({ success: false, message: 'User not found' });
+// //     }
 // //     user.password = newPassword;
 // //     await user.save();
 
 // //     await Otp.deleteOne({ _id: record._id });
 // //     res.json({ success: true, message: 'Password reset successfully' });
 // //   } catch (error) {
+// //     console.error(error);
 // //     res.status(500).json({ success: false, message: error.message });
 // //   }
 // // };
 
 // // export const getMe = async (req, res) => {
+// //   // req.user should already be attached via auth middleware (preferably lean)
 // //   res.json({ success: true, user: req.user });
 // // };
 
-// // // export const loginWithKey = async (req, res) => {
-// // //   try {
-// // //     const { loginKey } = req.body;
-// // //     const user = await User.findOne({ loginKey });
-// // //     if (!user) {
-// // //       return res.status(401).json({ success: false, message: 'Invalid login key' });
-// // //     }
-
-// // //     if (!user.isVerified) {
-// // //       return res.status(401).json({ success: false, message: 'Please verify your email first' });
-// // //     }
-
-// // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-// // //     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
-// // //   } catch (error) {
-// // //     res.status(500).json({ success: false, message: error.message });
-// // //   }
-// // // };
-
-
-// // // In authController.js – add or update the loginWithKey function
 // // export const loginWithKey = async (req, res) => {
 // //   try {
 // //     const { loginKey } = req.body;
-// //     const user = await User.findOne({ loginKey });
+// //     // ✅ Lean query
+// //     const user = await User.findOne({ loginKey }).lean();
 // //     if (!user) {
 // //       return res.status(401).json({ success: false, message: 'Invalid login key' });
 // //     }
@@ -191,7 +401,6 @@
 // //       return res.status(401).json({ success: false, message: 'Please verify your email first' });
 // //     }
 
-// //     // ✅ Generate a JWT token
 // //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 // //     res.json({
 // //       success: true,
@@ -199,9 +408,23 @@
 // //       user: { id: user._id, name: user.name, email: user.email }
 // //     });
 // //   } catch (error) {
+// //     console.error(error);
 // //     res.status(500).json({ success: false, message: error.message });
 // //   }
 // // };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -221,7 +444,6 @@
 //   let exists = true;
 //   while (exists) {
 //     key = crypto.randomBytes(6).toString('base64').replace(/[+/=]/g, '').substring(0, 8);
-//     // ✅ Use lean() to avoid full document load
 //     const user = await User.findOne({ loginKey: key }).lean();
 //     if (!user) exists = false;
 //   }
@@ -232,34 +454,23 @@
 //   try {
 //     const { name, email, password, pincode } = req.body;
 
-//     // 1. Check verified user (lean)
 //     const existingVerified = await User.findOne({ email, isVerified: true }).lean();
 //     if (existingVerified) {
 //       return res.status(400).json({ success: false, message: 'User already exists' });
 //     }
 
-//     // 2. Delete unverified user atomically and their OTPs
 //     const unverifiedUser = await User.findOneAndDelete({ email, isVerified: false });
-//     if (unverifiedUser) {
-//       await Otp.deleteMany({ email });
-//     }
+//     if (unverifiedUser) await Otp.deleteMany({ email });
 
 //     const otp = generateOTP();
 //     const loginKey = await generateUniqueLoginKey();
 
 //     const user = await User.create({ name, email, password, pincode, loginKey, isVerified: false });
-
-//     await Otp.create({
-//       email,
-//       otp,
-//       type: 'verify',
-//       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-//     });
+//     await Otp.create({ email, otp, type: 'verify', expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
 
 //     try {
 //       await sendRegistrationEmail(email, name, otp, loginKey);
 //     } catch (emailError) {
-//       // Rollback
 //       await User.deleteOne({ _id: user._id });
 //       await Otp.deleteOne({ email, otp, type: 'verify' });
 //       console.error('Email sending failed:', emailError);
@@ -281,14 +492,12 @@
 // export const verifyOtp = async (req, res) => {
 //   try {
 //     const { email, otp, type } = req.body;
-//     // ✅ Lean OTP check
 //     const record = await Otp.findOne({ email, otp, type }).lean();
 //     if (!record || record.expiresAt < new Date()) {
 //       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
 //     }
 
 //     if (type === 'verify') {
-//       // ✅ Atomic update – no need to fetch user
 //       await User.updateOne({ email }, { $set: { isVerified: true } });
 //     }
 
@@ -303,30 +512,15 @@
 // export const login = async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
+//     const user = await User.findOne({ email }).select('+password name email isVerified _id').lean();
 
-//     // IMPORTANT: use .select('+password') to include the password field
-//     const user = await User.findOne({ email }).select('+password name isVerified email _id').lean();
-
-//     if (!user) {
-//       return res.status(401).json({ success: false, message: 'Invalid credentials' });
-//     }
-
-//     // Compare password (both arguments must be strings)
+//     if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 //     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(401).json({ success: false, message: 'Invalid credentials' });
-//     }
-
-//     if (!user.isVerified) {
-//       return res.status(401).json({ success: false, message: 'Please verify your email first' });
-//     }
+//     if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+//     if (!user.isVerified) return res.status(401).json({ success: false, message: 'Please verify your email first' });
 
 //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-//     res.json({
-//       success: true,
-//       token,
-//       user: { id: user._id, name: user.name, email: user.email }
-//     });
+//     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ success: false, message: error.message });
@@ -336,83 +530,71 @@
 // export const forgotPassword = async (req, res) => {
 //   try {
 //     const { email } = req.body;
-//     // ✅ Lean check existence
 //     const user = await User.findOne({ email }).lean();
-//     if (!user) {
-//       return res.status(404).json({ success: false, message: 'User not found' });
-//     }
+//     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
 //     const otp = generateOTP();
-//     await Otp.create({
-//       email,
-//       otp,
-//       type: 'reset',
-//       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-//     });
+//     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+//     await Otp.create({ email, otp, type: 'reset', expiresAt });
 
 //     await sendOtpEmail(email, otp, 'reset');
-//     res.json({ success: true, message: 'OTP sent to email' });
+//     res.json({ success: true, message: 'OTP sent to your email' });
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
 
+// // ✅ FIXED: resetPassword with proper OTP validation and deletion
 // export const resetPassword = async (req, res) => {
 //   try {
 //     const { email, otp, newPassword } = req.body;
-//     // ✅ Lean OTP check
-//     const record = await Otp.findOne({ email, otp, type: 'reset' }).lean();
-//     if (!record || record.expiresAt < new Date()) {
+//     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+//     // Find valid OTP (not expired)
+//     const otpRecord = await Otp.findOne({ email, otp, type: 'reset', expiresAt }).lean();
+
+//     if (!otpRecord) {
 //       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
 //     }
 
-//     // Fetch user to update password (pre-save hook will hash)
+//     // Find the user
 //     const user = await User.findOne({ email });
 //     if (!user) {
 //       return res.status(404).json({ success: false, message: 'User not found' });
 //     }
+
+//     // Update password (pre-save hook will hash it)
 //     user.password = newPassword;
 //     await user.save();
 
-//     await Otp.deleteOne({ _id: record._id });
+//     // Delete the used OTP
+//     await Otp.deleteOne({ _id: otpRecord._id });
+
 //     res.json({ success: true, message: 'Password reset successfully' });
 //   } catch (error) {
-//     console.error(error);
+//     console.error('Reset password error:', error);
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
 
 // export const getMe = async (req, res) => {
-//   // req.user should already be attached via auth middleware (preferably lean)
 //   res.json({ success: true, user: req.user });
 // };
 
 // export const loginWithKey = async (req, res) => {
 //   try {
 //     const { loginKey } = req.body;
-//     // ✅ Lean query
 //     const user = await User.findOne({ loginKey }).lean();
-//     if (!user) {
-//       return res.status(401).json({ success: false, message: 'Invalid login key' });
-//     }
-
-//     if (!user.isVerified) {
-//       return res.status(401).json({ success: false, message: 'Please verify your email first' });
-//     }
-
+//     if (!user) return res.status(401).json({ success: false, message: 'Invalid login key' });
+//     if (!user.isVerified) return res.status(401).json({ success: false, message: 'Please verify your email first' });
 //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-//     res.json({
-//       success: true,
-//       token,
-//       user: { id: user._id, name: user.name, email: user.email }
-//     });
+//     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ success: false, message: error.message });
 //   }
 // };
-
 
 
 
@@ -436,6 +618,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { sendOtpEmail, sendRegistrationEmail } from '../utils/emailService.js';
 import crypto from 'crypto';
+import { sendWelcomeNotification } from './notificationController.js';
 
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
@@ -450,9 +633,23 @@ const generateUniqueLoginKey = async () => {
   return key;
 };
 
+// Helper to log OTP (for both dev and fallback)
+const logOTP = (email, name, otp, loginKey, type = 'verify') => {
+  console.log('\n=================================');
+  console.log(`📧 OTP for ${email} (${type === 'verify' ? 'Verification' : 'Password Reset'})`);
+  if (name) console.log(`User: ${name}`);
+  console.log(`OTP: ${otp}`);
+  if (loginKey) console.log(`Login Key: ${loginKey}`);
+  console.log('=================================\n');
+};
+
 export const register = async (req, res) => {
   try {
     const { name, email, password, pincode } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+    }
 
     const existingVerified = await User.findOne({ email, isVerified: true }).lean();
     if (existingVerified) {
@@ -468,13 +665,23 @@ export const register = async (req, res) => {
     const user = await User.create({ name, email, password, pincode, loginKey, isVerified: false });
     await Otp.create({ email, otp, type: 'verify', expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
 
-    try {
-      await sendRegistrationEmail(email, name, otp, loginKey);
-    } catch (emailError) {
-      await User.deleteOne({ _id: user._id });
-      await Otp.deleteOne({ email, otp, type: 'verify' });
-      console.error('Email sending failed:', emailError);
-      return res.status(500).json({ success: false, message: 'Failed to send verification email. Please try again.' });
+    let emailSent = false;
+    let emailError = null;
+
+    // Try to send email (if in production or forced)
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        await sendRegistrationEmail(email, name, otp, loginKey);
+        emailSent = true;
+      } catch (err) {
+        emailError = err;
+        console.error('Email sending failed:', err);
+      }
+    }
+
+    // If email was not sent (dev mode or error), log OTP to console
+    if (!emailSent) {
+      logOTP(email, name, otp, loginKey, 'verify');
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -482,9 +689,13 @@ export const register = async (req, res) => {
       success: true,
       token,
       user: { id: user._id, name, email, isVerified: false },
+      ...(emailError && { warning: 'Email not sent, but registration succeeded. Check console for OTP.' })
     });
   } catch (error) {
     console.error('Registration error:', error);
+    if (error.code === 11000 && error.keyPattern?.email) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -492,13 +703,15 @@ export const register = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp, type } = req.body;
-    const record = await Otp.findOne({ email, otp, type }).lean();
-    if (!record || record.expiresAt < new Date()) {
+    const record = await Otp.findOne({ email, otp, type, expiresAt: { $gt: new Date() } }).lean();
+    if (!record) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
     }
 
     if (type === 'verify') {
       await User.updateOne({ email }, { $set: { isVerified: true } });
+      const user = await User.findOne({ email }).lean();
+      if (user) await sendWelcomeNotification(user._id, user.name);
     }
 
     await Otp.deleteOne({ _id: record._id });
@@ -513,16 +726,17 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password name email isVerified _id').lean();
+
     if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
     if (!user.isVerified) return res.status(401).json({ success: false, message: 'Please verify your email first' });
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
     console.error('Login error:', error);
-    // Send the actual error to the frontend for debugging
-    res.status(500).json({ success: false, message: 'Internal server error', details: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -536,40 +750,42 @@ export const forgotPassword = async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await Otp.create({ email, otp, type: 'reset', expiresAt });
 
-    await sendOtpEmail(email, otp, 'reset');
+    let emailSent = false;
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        await sendOtpEmail(email, otp, 'reset');
+        emailSent = true;
+      } catch (err) {
+        console.error('Email sending failed:', err);
+      }
+    }
+
+    if (!emailSent) {
+      logOTP(email, null, otp, null, 'reset');
+      return res.json({ success: true, message: 'OTP sent (check console)' });
+    }
+
     res.json({ success: true, message: 'OTP sent to your email' });
   } catch (error) {
-    console.error(error);
+    console.error('Forgot password error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// ✅ FIXED: resetPassword with proper OTP validation and deletion
 export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    // Find valid OTP (not expired)
-    const otpRecord = await Otp.findOne({ email, otp, type: 'reset', expiresAt }).lean();
-
+    const otpRecord = await Otp.findOne({ email, otp, type: 'reset', expiresAt: { $gt: new Date() } }).lean();
     if (!otpRecord) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
     }
 
-    // Find the user
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Update password (pre-save hook will hash it)
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     user.password = newPassword;
     await user.save();
 
-    // Delete the used OTP
     await Otp.deleteOne({ _id: otpRecord._id });
-
     res.json({ success: true, message: 'Password reset successfully' });
   } catch (error) {
     console.error('Reset password error:', error);
