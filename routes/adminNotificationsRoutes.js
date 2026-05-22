@@ -4,6 +4,7 @@ import { isAdmin } from '../middleware/adminMiddleware.js';
 import { getAllNotifications, createNotification, deleteNotification } from '../controllers/notificationController.js';
 
 const router = express.Router();
+
 router.use(protect, isAdmin);
 
 router.get('/notifications', getAllNotifications);
