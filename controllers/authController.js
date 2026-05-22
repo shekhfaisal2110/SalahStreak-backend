@@ -513,17 +513,15 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password name email isVerified _id').lean();
-
     if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
     if (!user.isVerified) return res.status(401).json({ success: false, message: 'Please verify your email first' });
-
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error', details: error.message });
   }
 };
 
