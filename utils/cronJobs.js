@@ -141,7 +141,6 @@ cron.schedule('0 22 * * *', async () => {
           sendPrayerReminderEmail(user.email, user.name, streak).catch(err =>
             console.error(`Reminder email failed for ${user.email}:`, err)
           );
-          // No DB update needed
         }
       }
 
