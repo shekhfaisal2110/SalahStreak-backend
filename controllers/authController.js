@@ -775,17 +775,37 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
-    const otpRecord = await Otp.findOne({ email, otp, type: 'reset', expiresAt: { $gt: new Date() } }).lean();
+
+    console.log('🔐 Reset password attempt:', { email, otp, newPassword: '***' });
+
+    // Find a valid, non‑expired OTP
+    const otpRecord = await Otp.findOne({
+      email,
+      otp,
+      type: 'reset',
+      expiresAt: { $gt: new Date() }
+    }).lean();
+
     if (!otpRecord) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+      // Check if an expired OTP exists for this email/otp (to give better feedback)
+      const expiredOtp = await Otp.findOne({ email, otp, type: 'reset' }).lean();
+      if (expiredOtp) {
+        return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+      }
+      return res.status(400).json({ success: false, message: 'Invalid OTP. Please check and try again.' });
     }
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     user.password = newPassword;
     await user.save();
 
+    // Delete the used OTP
     await Otp.deleteOne({ _id: otpRecord._id });
+
     res.json({ success: true, message: 'Password reset successfully' });
   } catch (error) {
     console.error('Reset password error:', error);
